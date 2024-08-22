@@ -1,0 +1,74 @@
+services:
+  db-inventory:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "postgres2024"
+    ports:
+      - "5432:5432"
+    # network_mode: host
+    networks:
+      - saga-net
+    container_name: db-inventory
+  db-order:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "postgres2024"
+    ports:
+      - "5433:5432"
+    networks:
+      - saga-net
+    container_name: db-order
+    # network_mode: host
+  # run_migrations:
+  #   build:
+  #     context: .
+  #   env_file: .env
+  #   ports:
+  #     - "8432:8432"
+  #   network_mode: host
+  #   depends_on: ['db']
+  #   command: make migrate_up
+  api-orchestrator:
+    build:
+      context: .
+    # env_file: .env
+    ports:
+     - "8080:8080"
+    # network_mode: host # for now
+    networks:
+      - saga-net
+    command: go run api-orchestrator/cmd/main.go
+  api-order:
+    build:
+      context: .
+    env_file: api-order/.env
+    ports:
+     - "8081:8080"
+    # network_mode: host # for now
+    networks:
+      - saga-net
+    command: go run api-order/cmd/main.go
+  api-inventory:
+    build:
+      context: .
+    env_file: api-inventory/.env
+    ports:
+     - "8082:8080"
+    # network_mode: host # for now
+    networks:
+      - saga-net
+    command: go run api-inventory/cmd/main.go
+  api-payment:
+    build:
+      context: .
+    # env_file: .env
+    ports:
+     - "8083:8080"
+    # network_mode: host # for now
+    networks:
+      - saga-net
+    command: go run api-payment/cmd/main.go
+networks:
+  saga-net:
+    driver: bridge
+    name: saga-net
